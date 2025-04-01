@@ -161,7 +161,16 @@ func (tht *TokyoHot) GetMovieInfoByURL(rawURL string) (info *model.MovieInfo, er
 				parser.ParseTexts(htmlquery.FindOne(e.DOM.(*html.Node), dd),
 					(*[]string)(&info.Genres))
 			case "シリーズ":
+				//origin
 				info.Series = e.ChildText(dda)
+				//info.Series是string ? 这里的值直观的表示视频的系列，有多个值，可以放在Jellyfin的标签显示.不知道该怎么处理
+				//todo 把该内容提取显示到Jellyfin的中的标签
+				//parser.ParseTexts(htmlquery.FindOne(e.DOM.(*html.Node), dd),
+				//	(*[]string)(&info.Series))
+			case "タグ": 
+                                //Genres的补充这里的更有特征性
+				parser.ParseTexts(htmlquery.FindOne(e.DOM.(*html.Node), dd),
+					(*[]string)(&info.Genres))
 			case "レーベル":
 				info.Label = e.ChildText(dda)
 			case "配信開始日":
