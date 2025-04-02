@@ -8,6 +8,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"slices"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/gocolly/colly/v2"
@@ -168,7 +169,26 @@ func (tht *TokyoHot) GetMovieInfoByURL(rawURL string) (info *model.MovieInfo, er
 				parser.ParseTexts(htmlquery.FindOne(e.DOM.(*html.Node), dd), &genres)
 				info.Genres = append(info.Genres, genres...)
 			case "シリーズ":
-				info.Series = e.ChildText(dda)
+				var series []string
+				parser.ParseTexts(htmlquery.FindOne(e.DOM.(*html.Node), dd), &series)
+
+				// 备份原始第一个元素
+				originalFirst := ""
+				if len(series) > 0 {
+					originalFirst = series[0]
+				}
+			
+				// 过滤掉不需要的项
+				filteredSeries := slices.DeleteFunc(series, func(s string) bool {
+					return s == "撮りおろし徹底陵辱ビデオ" || s == "AIアップスケール作品"
+				})
+			
+				// 赋值逻辑
+				if len(filteredSeries) > 0 {
+					info.Series = filteredSeries[0] // 处理后有值，取第一个
+				} else if originalFirst != "" {
+					info.Series = originalFirst // 处理后为空，则使用原始第一个
+				}
 			case "レーベル":
 				info.Label = e.ChildText(dda)
 			case "配信開始日":
